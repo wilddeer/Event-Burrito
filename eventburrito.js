@@ -5,7 +5,7 @@
  *
  * MIT License
  */
-function eventBurrito(_this, options) {
+function EventBurrito(_this, options) {
 
 	var o = options || {},
 		noop = function() {};
