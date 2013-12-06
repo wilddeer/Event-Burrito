@@ -12,7 +12,7 @@ function eventBurrito(_this, options) {
 
 	o.clickTolerance = o.clickTolerance || 0;
 	o.preventScroll = o.preventScroll || false;
-	o.mouse = o.mouse || true;
+	o.mouse = (o.mouse === undefined?true:o.mouse);
 	o.start = o.start || noop;
 	o.move = o.move || noop;
 	o.end = o.end || noop;
