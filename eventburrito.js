@@ -41,14 +41,15 @@ function EventBurrito(_this, options) {
         checks = [
             //touch events
             function(e) {
-                //if it's multitouch or pinch move -- skip the event
+                //skip the event if it's multitouch or pinch move
                 return (e.touches && e.touches.length > 1) || (e.scale && e.scale !== 1);
             },
             //pointer events
             function(e) {
-                //if event is not primary (other pointers during multitouch),
-                //if left mouse button is not pressed,
-                //if mouse drag is disabled and event is not touch -- skip it!
+                //Skip it, if:
+                //1. event is not primary (other pointers during multitouch),
+                //2. left mouse button is not pressed,
+                //3. mouse drag is disabled and event is not touch
                 return !e.isPrimary || e.buttons !== 1 || (!o.mouse && e.pointerType !== 'touch' && e.pointerType !== 'pen');
             },
             //IE10 pointer events
@@ -58,7 +59,7 @@ function EventBurrito(_this, options) {
             },
             //mouse events
             function(e) {
-                //if left mouse button is not pressed -- skip the event
+                //skip the event if left mouse button is not pressed
                 //in IE7-8 `buttons` is not defined, in IE9 LMB is 0
                 return (e.buttons && e.buttons !== 1);
             }
@@ -69,7 +70,7 @@ function EventBurrito(_this, options) {
 
         el.addEventListener? el.addEventListener(event, func, !!bool): el.attachEvent('on'+event, func);
 
-        //return event remover to easily remove anon functions later
+        //return event remover to easily remove anonymous functions later
         return {
             remove: function() {
                 removeEvent(el, event, func, bool);
@@ -114,7 +115,7 @@ function EventBurrito(_this, options) {
 
         if (checks[eventType](event)) return;
 
-        //add event listeners to the document, so that the slider
+        //attach event listeners to the document, so that the slider
         //will continue to recieve events wherever the pointer is
         addEvent(document, events[eventType][1], tMove);
         addEvent(document, events[eventType][2], tEnd);
@@ -162,27 +163,22 @@ function EventBurrito(_this, options) {
     function tEnd(event) {
         eventType && getDiff(event);
 
-        //IE likes to focus the link after touchend.
-        //Since we dont' want to disable the outline completely for accessibility reasons,
+        //IE likes to focus links after touchend.
+        //Since we don't want to disable link outlines completely for accessibility reasons,
         //we just defocus it after touch and disable the outline for `:active` links in css.
-        //This way the outline will remain visible when tabbing through the links.
+        //This way the outline will remain visible when using keyboard.
         event.target && event.target.blur && event.target.blur();
 
-        //remove the event listeners
-        detachEvents();
+        //detach event listeners from the document
+        removeEvent(document, events[eventType][1], tMove);
+        removeEvent(document, events[eventType][2], tEnd);
+        removeEvent(document, events[eventType][3], tEnd);
 
         o.end(event, start, diff, speed);
     }
 
-    //remove event listeners from the document
-    function detachEvents() {
-        removeEvent(document, events[eventType][1], tMove);
-        removeEvent(document, events[eventType][2], tEnd);
-        removeEvent(document, events[eventType][3], tEnd);
-    }
-
     function init() {
-        //bind the touchstart
+        //bind touchstart
         listeners.push(addEvent(_this, events[eventModel][0], function(e) {tStart(e, eventModel);}));
         //prevent stuff from dragging when using mouse
         listeners.push(addEvent(_this, 'dragstart', preventDefault));
@@ -200,6 +196,7 @@ function EventBurrito(_this, options) {
 
     init();
 
+    //expose the API
     return {
         getClicksAllowed: function() {
             return clicksAllowed;
