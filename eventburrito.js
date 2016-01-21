@@ -7,12 +7,15 @@
  */
 function EventBurrito(_this, options) {
 
-    var noop = function() {},
+    var noop = function() {
+            return true;
+        },
         o = {
             preventDefault: true,
             clickTolerance: 0,
             preventScroll: false,
             mouse: true,
+            axis: 'x',
             start: noop,
             move: noop,
             end: noop,
@@ -154,8 +157,12 @@ function EventBurrito(_this, options) {
     }
 
     function tMove(event) {
-        //if user is trying to scroll vertically -- do nothing
-        if ((!o.preventScroll && isScrolling) || checks[eventType](event)) return;
+        
+        // We only need to prevent scroll when we use X axis
+        if (o.axis == 'x') {
+            //if user is trying to scroll vertically -- do nothing
+            if ((!o.preventScroll && isScrolling) || checks[eventType](event)) return;
+        }
 
         getDiff(event);
 
@@ -167,9 +174,10 @@ function EventBurrito(_this, options) {
             if (isScrolling = (Math.abs(diff.x) < Math.abs(diff.y)) && !o.preventScroll) return;
         }
 
-        if (o.preventDefault) preventDefault(event); //Prevent scrolling
-
-        o.move(event, start, diff, speed);
+        // When the move callback returns true, we have to prevent scrolling, otherwise do not prevent scrolling
+        if(o.move(event, start, diff, speed)){
+            if (o.preventDefault) preventDefault(event); //Prevent scrolling
+        }
     }
 
     function tEnd(event) {
